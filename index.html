@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StudyDeck — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ── TOKENS ── */
+:root{
+  --primary:#4F46E5;--primary-hover:#4338CA;--primary-light:#EEF2FF;--primary-muted:#818CF8;
+  --accent:#F59E0B;
+  --danger:#EF4444;--danger-hover:#DC2626;--danger-light:#FEF2F2;
+  --success:#10B981;--success-light:#ECFDF5;
+  --bg:#F8F9FC;--surface:#fff;--border:#E5E7EB;--border-subtle:#F3F4F6;
+  --text:#111827;--text-2:#6B7280;--text-muted:#9CA3AF;--text-on-primary:#fff;
+  --font-d:'Sora',sans-serif;--font-b:'Inter',sans-serif;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:24px;--r-full:9999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 30px rgba(0,0,0,.10),0 4px 8px rgba(0,0,0,.04);
+  --focus:0 0 0 3px rgba(79,70,229,.25);
+  --t-fast:120ms ease;--t-base:200ms ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-b);color:var(--text);background:var(--bg);min-height:100vh}
+h1,h2,h3,h4{font-family:var(--font-d);line-height:1.2}
+button{font-family:var(--font-b);cursor:pointer;border:none;background:none}
+input,textarea{font-family:var(--font-b);font-size:1rem}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:var(--r-full)}
+
+/* ── LAYOUT ── */
+#app{min-height:100vh;display:flex;flex-direction:column}
+.page{flex:1;padding:2rem 1rem}
+.container{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:2.5rem}
+
+/* ── HERO ── */
+.hero-title{font-size:clamp(1.8rem,5vw,2.5rem);font-weight:800;display:flex;align-items:center;gap:.75rem}
+.hero-sub{font-size:1.1rem;color:var(--text-2);margin-top:.5rem;padding-left:3.2rem}
+
+/* ── SECTION HEADER ── */
+.sec-header{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.sec-title{font-size:1.5rem;font-weight:800}
+.sec-sub{font-size:.875rem;color:var(--text-2);margin-top:.25rem}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:.5rem;font-weight:600;border-radius:var(--r-md);border:2px solid transparent;transition:background var(--t-fast),color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast);white-space:nowrap;cursor:pointer;font-family:var(--font-b)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm{padding:.25rem .75rem;font-size:.875rem}
+.btn-md{padding:.5rem 1.25rem;font-size:.875rem}
+.btn-lg{padding:.75rem 1.5rem;font-size:1rem}
+.btn-primary{background:var(--primary);color:var(--text-on-primary)}
+.btn-primary:hover:not(:disabled){background:var(--primary-hover);box-shadow:var(--shadow-md)}
+.btn-secondary{background:var(--primary-light);color:var(--primary)}
+.btn-secondary:hover:not(:disabled){background:#E0E7FF}
+.btn-danger{background:var(--danger-light);color:var(--danger)}
+.btn-danger:hover:not(:disabled){background:var(--danger);color:#fff}
+.btn-ghost{background:transparent;color:var(--text-2);border-color:var(--border)}
+.btn-ghost:hover:not(:disabled){background:var(--border-subtle);color:var(--text)}
+
+/* ── SET GRID ── */
+.set-grid{display:grid;grid-template-columns:1fr;gap:1rem}
+@media(min-width:640px){.set-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ── SET CARD ── */
+.set-card{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:stretch;overflow:hidden;transition:box-shadow var(--t-base),transform var(--t-base)}
+.set-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.set-card-accent{width:4px;background:var(--primary);flex-shrink:0}
+.set-card-main{flex:1;padding:1.25rem 1.25rem 1.25rem 1rem;text-align:left;cursor:pointer;background:none;border:none;min-width:0}
+.set-card-title{font-family:var(--font-d);font-size:1.1rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-card-desc{font-size:.875rem;color:var(--text-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:.375rem}
+.set-card-meta{display:flex;align-items:center;gap:.75rem;margin-top:.625rem}
+.badge{display:inline-flex;align-items:center;background:var(--primary-light);color:var(--primary);font-size:.7rem;font-weight:700;padding:2px .5rem;border-radius:var(--r-full)}
+.meta-date{font-size:.75rem;color:var(--text-muted)}
+.set-card-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;padding:.75rem;border-left:1px solid var(--border-subtle);opacity:0;transition:opacity var(--t-fast)}
+.set-card:hover .set-card-actions{opacity:1}
+.icon-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:var(--r-sm);color:var(--text-2);transition:background var(--t-fast),color var(--t-fast)}
+.icon-btn:hover{background:var(--primary-light);color:var(--primary)}
+.icon-btn.del:hover{background:var(--danger-light);color:var(--danger)}
+
+/* ── EMPTY STATE ── */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:4rem 2rem;gap:1rem}
+.empty-icon{font-size:3rem;color:var(--text-muted)}
+.empty-title{font-size:1.25rem;font-weight:700}
+.empty-desc{font-size:.9rem;color:var(--text-2);max-width:340px;line-height:1.6}
+
+/* ── MODAL ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:1rem;z-index:1000;animation:fadeIn var(--t-fast) ease}
+.modal-panel{background:var(--surface);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);width:100%;max-height:90vh;overflow-y:auto;animation:slideUp var(--t-base) ease}
+.modal-sm{max-width:420px}.modal-md{max-width:560px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 1.5rem 1rem;border-bottom:1px solid var(--border-subtle)}
+.modal-title{font-size:1.25rem;font-weight:700}
+.modal-close{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--r-md);color:var(--text-2);transition:background var(--t-fast)}
+.modal-close:hover{background:var(--border-subtle);color:var(--text)}
+.modal-body{padding:1.5rem}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── FORMS ── */
+.form-fields{display:flex;flex-direction:column;gap:1.25rem;margin-bottom:1.5rem}
+.field{display:flex;flex-direction:column;gap:.5rem}
+.label{font-size:.875rem;font-weight:600;color:var(--text)}
+.req{color:var(--danger);margin-left:.25rem}
+.opt{color:var(--text-muted);font-weight:400;font-size:.75rem}
+.input,.textarea{width:100%;padding:.75rem 1rem;border:2px solid var(--border);border-radius:var(--r-md);font-size:1rem;color:var(--text);background:var(--surface);transition:border-color var(--t-fast),box-shadow var(--t-fast);resize:none}
+.input:focus,.textarea:focus{outline:none;border-color:var(--primary);box-shadow:var(--focus)}
+.input-error{border-color:var(--danger)!important}
+.error-msg{font-size:.75rem;color:var(--danger);font-weight:500}
+.char-count{font-size:.75rem;color:var(--text-muted);text-align:right}
+.textarea{resize:vertical;min-height:80px;line-height:1.6}
+.card-two-col{display:grid;grid-template-columns:1fr;gap:1rem}
+@media(min-width:520px){.card-two-col{grid-template-columns:1fr 1fr}}
+.form-actions{display:flex;justify-content:flex-end;gap:.75rem;padding-top:1rem;border-top:1px solid var(--border-subtle)}
+.confirm-msg{color:var(--text-2);line-height:1.6;margin-bottom:1.5rem}
+
+/* ── BACK NAV ── */
+.back-nav{display:flex;align-items:center;gap:.5rem;font-size:.875rem}
+.back-link{display:flex;align-items:center;gap:.25rem;color:var(--primary);font-weight:500;cursor:pointer;transition:color var(--t-fast)}
+.back-link:hover{color:var(--primary-hover)}
+.nav-sep{color:var(--text-muted)}
+.nav-cur{color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+
+/* ── SET DETAIL HEADER ── */
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;padding-bottom:1.5rem;border-bottom:2px solid var(--border-subtle)}
+.detail-title{font-size:clamp(1.5rem,4vw,2rem);font-weight:800}
+.detail-desc{font-size:1rem;color:var(--text-2);line-height:1.6;max-width:600px;margin-top:.75rem}
+.detail-meta{display:flex;align-items:center;gap:.5rem;margin-top:.75rem}
+.detail-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;flex-shrink:0}
+
+/* ── CARD LIST ── */
+.card-list-header{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.card-list-title{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:.5rem}
+.count-pill{display:inline-flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary);font-size:.7rem;font-weight:700;min-width:22px;height:22px;padding:0 .5rem;border-radius:var(--r-full)}
+.cards-stack{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem}
+
+/* ── CARD ITEM ── */
+.card-item{display:grid;grid-template-columns:28px 1fr 1px 1fr auto;align-items:start;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;transition:box-shadow var(--t-fast),border-color var(--t-fast)}
+.card-item:hover{border-color:var(--primary-muted);box-shadow:var(--shadow-sm)}
+.card-idx{display:flex;align-items:center;justify-content:center;padding:1rem 0;font-size:.75rem;font-weight:600;color:var(--text-muted);background:var(--bg);align-self:stretch}
+.card-col{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;min-width:0}
+.card-divider{background:var(--border);align-self:stretch;width:1px}
+.col-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--text-muted);text-transform:uppercase}
+.card-text{font-size:.875rem;color:var(--text);line-height:1.6;word-break:break-word;white-space:pre-wrap}
+.card-item-actions{display:flex;flex-direction:column;gap:.25rem;padding:.5rem;opacity:0;transition:opacity var(--t-fast);align-self:stretch;justify-content:center;border-left:1px solid var(--border-subtle)}
+.card-item:hover .card-item-actions{opacity:1}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1F2937;color:#fff;padding:.75rem 1.25rem;border-radius:var(--r-md);font-size:.875rem;font-weight:500;box-shadow:var(--shadow-lg);z-index:2000;animation:slideUp .2s ease}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// STUDYDECK — FASE 1: Sistema de Conjuntos y Tarjetas
+// Implementación vanilla JS con arquitectura limpia
+// ══════════════════════════════════════════════════════
+
+// ── UUID ──────────────────────────────────────────────
+function generateId() {
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random()*16|0, v = c==='x'?r:(r&0x3)|0x8;
+    return v.toString(16);
+  });
+}
+
+// ── STORAGE SERVICE ───────────────────────────────────
+const STORAGE_KEY = 'studydeck_data';
+const SCHEMA_VERSION = 1;
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { version:SCHEMA_VERSION, sets:[], cards:[] };
+    const p = JSON.parse(raw);
+    if (p.version !== SCHEMA_VERSION) return { version:SCHEMA_VERSION, sets:[], cards:[] };
+    return p;
+  } catch { return { version:SCHEMA_VERSION, sets:[], cards:[] }; }
+}
+
+function saveData(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version:SCHEMA_VERSION, sets:state.sets, cards:state.cards }));
+  } catch(e) { console.error('[storage] Error al guardar:', e); }
+}
+
+// ── STORE ─────────────────────────────────────────────
+const _data = loadData();
+const store = {
+  sets: _data.sets,
+  cards: _data.cards,
+  _listeners: [],
+
+  subscribe(fn) { this._listeners.push(fn); return () => { this._listeners = this._listeners.filter(l=>l!==fn); }; },
+  _notify() { saveData(this); this._listeners.forEach(fn => fn()); },
+
+  createSet(data) {
+    const now = new Date().toISOString();
+    const s = { id:generateId(), title:data.title.trim(), description:(data.description||'').trim(), createdAt:now, updatedAt:now };
+    this.sets = [...this.sets, s];
+    this._notify(); return s;
+  },
+  updateSet(id, data) {
+    this.sets = this.sets.map(s => s.id===id ? {...s, ...data, title:data.title?.trim()??s.title, description:data.description?.trim()??s.description, updatedAt:new Date().toISOString()} : s);
+    this._notify();
+  },
+  deleteSet(id) {
+    this.sets = this.sets.filter(s=>s.id!==id);
+    this.cards = this.cards.filter(c=>c.setId!==id);
+    this._notify();
+  },
+  getSetById(id) { return this.sets.find(s=>s.id===id); },
+
+  createCard(setId, data) {
+    const now = new Date().toISOString();
+    const c = { id:generateId(), setId, term:data.term.trim(), definition:data.definition.trim(), createdAt:now, updatedAt:now };
+    this.cards = [...this.cards, c];
+    this.sets = this.sets.map(s=>s.id===setId?{...s,updatedAt:now}:s);
+    this._notify(); return c;
+  },
+  updateCard(id, data) {
+    const now = new Date().toISOString();
+    this.cards = this.cards.map(c => c.id===id ? {...c, term:data.term?.trim()??c.term, definition:data.definition?.trim()??c.definition, updatedAt:now} : c);
+    this._notify();
+  },
+  deleteCard(id) {
+    this.cards = this.cards.filter(c=>c.id!==id);
+    this._notify();
+  },
+  getCardsBySetId(setId) { return this.cards.filter(c=>c.setId===setId); },
+};
+
+// ── ROUTER ─────────────────────────────────────────────
+const router = {
+  current: { page: 'home', setId: null },
+  listeners: [],
+  go(page, setId=null) { this.current={page,setId}; this.listeners.forEach(f=>f()); },
+  onChange(fn) { this.listeners.push(fn); },
+};
+
+// ── ICONS SVG ─────────────────────────────────────────
+const icons = {
+  plus: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  edit: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M11.333 2a1.886 1.886 0 012.667 2.667L5.333 13.333l-3.666.667.666-3.667L11.333 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  trash: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M5.333 4V2.667h5.334V4M6.667 7.333v4M9.333 7.333v4M3.333 4l.667 9.333h8L12.667 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  close: `<svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+  back: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14 8H2M2 8L8 2M2 8l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+
+// ── HELPERS ────────────────────────────────────────────
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('es-ES', {day:'numeric',month:'short',year:'numeric'});
+}
+function fmtDateLong(iso) {
+  return new Date(iso).toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'});
+}
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+function escHtml(s='') { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── MODAL ENGINE ──────────────────────────────────────
+let activeModal = null;
+function openModal(html, size='modal-md', onOpen=null) {
+  closeModal();
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.innerHTML = `<div class="modal-panel ${size}">${html}</div>`;
+  backdrop.addEventListener('click', e => { if(e.target===backdrop) closeModal(); });
+  document.addEventListener('keydown', handleEsc);
+  document.body.style.overflow='hidden';
+  document.body.appendChild(backdrop);
+  activeModal = backdrop;
+  if(onOpen) onOpen(backdrop);
+  backdrop.querySelector('[data-close]')?.addEventListener('click', closeModal);
+}
+function closeModal() {
+  if(activeModal) { activeModal.remove(); activeModal=null; }
+  document.removeEventListener('keydown', handleEsc);
+  document.body.style.overflow='';
+}
+function handleEsc(e) { if(e.key==='Escape') closeModal(); }
+
+// ── CONFIRM DIALOG ────────────────────────────────────
+function openConfirm({ title, message, confirmLabel='Eliminar', onConfirm }) {
+  const html = `
+    <div class="modal-header">
+      <h2 class="modal-title">${escHtml(title)}</h2>
+      <button class="modal-close" data-close>${icons.close}</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-msg">${escHtml(message)}</p>
+      <div class="form-actions">
+        <button class="btn btn-ghost btn-md" data-close>Cancelar</button>
+        <button class="btn btn-danger btn-md" id="confirm-ok">${escHtml(confirmLabel)}</button>
+      </div>
+    </div>`;
+  openModal(html, 'modal-sm', (el) => {
+    el.querySelector('#confirm-ok').addEventListener('click', () => { closeModal(); onConfirm(); });
+  });
+}
+
+// ── SET FORM ──────────────────────────────────────────
+function openSetForm(set=null) {
+  const editing = !!set;
+  const html = `
+    <div class="modal-header">
+      <h2 class="modal-title">${editing?'Editar conjunto':'Nuevo conjunto'}</h2>
+      <button class="modal-close" data-close>${icons.close}</button>
+    </div>
+    <div class="modal-body">
+      <form id="set-form" novalidate>
+        <div class="form-fields">
+          <div class="field">
+            <label class="label" for="sf-title">Título<span class="req">*</span></label>
+            <input id="sf-title" class="input" maxlength="120" value="${escHtml(set?.title||'')}" placeholder="Ej: Vocabulario de biología" autocomplete="off"/>
+            <span id="sf-title-err" class="error-msg" style="display:none"></span>
+            <span class="char-count" id="sf-char">0/120</span>
+          </div>
+          <div class="field">
+            <label class="label" for="sf-desc">Descripción<span class="opt"> (opcional)</span></label>
+            <textarea id="sf-desc" class="textarea" rows="3" maxlength="500" placeholder="Describe el contenido de este conjunto…">${escHtml(set?.description||'')}</textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost btn-md" data-close>Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-md">${editing?'Guardar cambios':'Crear conjunto'}</button>
+        </div>
+      </form>
+    </div>`;
+  openModal(html, 'modal-md', (el) => {
+    const titleInput = el.querySelector('#sf-title');
+    const charCount = el.querySelector('#sf-char');
+    titleInput.focus();
+    function updateChar() { charCount.textContent = `${titleInput.value.length}/120`; }
+    updateChar();
+    titleInput.addEventListener('input', updateChar);
+
+    el.querySelector('#set-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const title = titleInput.value;
+      const errEl = el.querySelector('#sf-title-err');
+      if (!title.trim()) {
+        errEl.textContent='El título es obligatorio.'; errEl.style.display='';
+        titleInput.classList.add('input-error'); return;
+      }
+      errEl.style.display='none'; titleInput.classList.remove('input-error');
+      const description = el.querySelector('#sf-desc').value;
+      if(editing) { store.updateSet(set.id, {title, description}); toast('Conjunto actualizado'); }
+      else { store.createSet({title, description}); toast('Conjunto creado'); }
+      closeModal();
+    });
+  });
+}
+
+// ── CARD FORM ─────────────────────────────────────────
+function openCardForm(setId, card=null) {
+  const editing = !!card;
+  const html = `
+    <div class="modal-header">
+      <h2 class="modal-title">${editing?'Editar tarjeta':'Nueva tarjeta'}</h2>
+      <button class="modal-close" data-close>${icons.close}</button>
+    </div>
+    <div class="modal-body">
+      <form id="card-form" novalidate>
+        <div class="form-fields">
+          <div class="card-two-col">
+            <div class="field">
+              <label class="label" for="cf-term">Término<span class="req">*</span></label>
+              <textarea id="cf-term" class="textarea" rows="4" maxlength="500" placeholder="Escribe el término…">${escHtml(card?.term||'')}</textarea>
+              <span id="cf-term-err" class="error-msg" style="display:none"></span>
+            </div>
+            <div class="field">
+              <label class="label" for="cf-def">Definición<span class="req">*</span></label>
+              <textarea id="cf-def" class="textarea" rows="4" maxlength="1000" placeholder="Escribe la definición…">${escHtml(card?.definition||'')}</textarea>
+              <span id="cf-def-err" class="error-msg" style="display:none"></span>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost btn-md" data-close>Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-md">${editing?'Guardar cambios':'Añadir tarjeta'}</button>
+        </div>
+      </form>
+    </div>`;
+  openModal(html, 'modal-md', (el) => {
+    el.querySelector(editing?'#cf-term':'#cf-term').focus();
+    el.querySelector('#card-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const term = el.querySelector('#cf-term').value;
+      const def  = el.querySelector('#cf-def').value;
+      let valid = true;
+      const te = el.querySelector('#cf-term-err'), de = el.querySelector('#cf-def-err');
+      const ti = el.querySelector('#cf-term'), di = el.querySelector('#cf-def');
+      if(!term.trim()) { te.textContent='El término es obligatorio.'; te.style.display=''; ti.classList.add('input-error'); valid=false; } else { te.style.display='none'; ti.classList.remove('input-error'); }
+      if(!def.trim()) { de.textContent='La definición es obligatoria.'; de.style.display=''; di.classList.add('input-error'); valid=false; } else { de.style.display='none'; di.classList.remove('input-error'); }
+      if(!valid) return;
+      if(editing) { store.updateCard(card.id, {term,definition:def}); toast('Tarjeta actualizada'); }
+      else { store.createCard(setId, {term,definition:def}); toast('Tarjeta añadida'); }
+      closeModal();
+    });
+  });
+}
+
+// ── RENDERERS ─────────────────────────────────────────
+function renderCardItem(card, index) {
+  const div = document.createElement('article');
+  div.className = 'card-item';
+  div.innerHTML = `
+    <div class="card-idx">${index+1}</div>
+    <div class="card-col">
+      <span class="col-label">Término</span>
+      <p class="card-text">${escHtml(card.term)}</p>
+    </div>
+    <div class="card-divider"></div>
+    <div class="card-col">
+      <span class="col-label">Definición</span>
+      <p class="card-text">${escHtml(card.definition)}</p>
+    </div>
+    <div class="card-item-actions">
+      <button class="icon-btn" title="Editar" data-edit-card>${icons.edit}</button>
+      <button class="icon-btn del" title="Eliminar" data-del-card>${icons.trash}</button>
+    </div>`;
+  div.querySelector('[data-edit-card]').addEventListener('click', () => openCardForm(card.setId, card));
+  div.querySelector('[data-del-card]').addEventListener('click', () => {
+    openConfirm({ title:'Eliminar tarjeta', message:`¿Seguro que quieres eliminar "${card.term}"? Esta acción no se puede deshacer.`, confirmLabel:'Sí, eliminar',
+      onConfirm() { store.deleteCard(card.id); toast('Tarjeta eliminada'); } });
+  });
+  return div;
+}
+
+function renderSetDetailPage(setId) {
+  const set = store.getSetById(setId);
+  if(!set) { router.go('home'); return document.createTextNode(''); }
+
+  const cards = store.getCardsBySetId(setId);
+  const wrapper = document.createElement('main');
+  wrapper.className = 'page';
+
+  const container = document.createElement('div');
+  container.className = 'container';
+
+  // Breadcrumb
+  const nav = document.createElement('nav');
+  nav.className = 'back-nav';
+  nav.innerHTML = `<button class="back-link">${icons.back} Mis conjuntos</button><span class="nav-sep">/</span><span class="nav-cur">${escHtml(set.title)}</span>`;
+  nav.querySelector('.back-link').addEventListener('click', () => router.go('home'));
+
+  // Detail header
+  const header = document.createElement('header');
+  header.className = 'detail-header';
+  const hl = document.createElement('div');
+  hl.innerHTML = `
+    <h1 class="detail-title">${escHtml(set.title)}</h1>
+    ${set.description ? `<p class="detail-desc">${escHtml(set.description)}</p>` : ''}
+    <div class="detail-meta">
+      <span class="badge">${cards.length} ${cards.length===1?'tarjeta':'tarjetas'}</span>
+      <span class="nav-sep" style="color:var(--text-muted)">·</span>
+      <span class="meta-date">Actualizado ${fmtDateLong(set.updatedAt)}</span>
+    </div>`;
+  const ha = document.createElement('div');
+  ha.className = 'detail-actions';
+  ha.innerHTML = `<button class="btn btn-ghost btn-sm" id="edit-set-btn">${icons.edit} Editar</button>
+    <button class="btn btn-danger btn-sm" id="del-set-btn">${icons.trash} Eliminar conjunto</button>`;
+  ha.querySelector('#edit-set-btn').addEventListener('click', () => openSetForm(set));
+  ha.querySelector('#del-set-btn').addEventListener('click', () => {
+    openConfirm({ title:'Eliminar conjunto', message:`¿Seguro que quieres eliminar "${set.title}" y sus ${cards.length} ${cards.length===1?'tarjeta':'tarjetas'}? Esta acción no se puede deshacer.`,
+      confirmLabel:'Sí, eliminar todo', onConfirm() { store.deleteSet(setId); router.go('home'); toast('Conjunto eliminado'); } });
+  });
+  header.appendChild(hl); header.appendChild(ha);
+
+  // Card section
+  const section = document.createElement('section');
+  const secHeader = document.createElement('div');
+  secHeader.className = 'card-list-header';
+  secHeader.innerHTML = `<h3 class="card-list-title">Tarjetas <span class="count-pill" id="card-count">${cards.length}</span></h3>`;
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn btn-secondary btn-sm';
+  addBtn.innerHTML = `${icons.plus} Añadir tarjeta`;
+  addBtn.addEventListener('click', () => openCardForm(setId));
+  secHeader.appendChild(addBtn);
+
+  const stackEl = document.createElement('div');
+  stackEl.className = 'cards-stack';
+  stackEl.id = 'cards-stack';
+
+  function renderCards() {
+    const currentSet = store.getSetById(setId);
+    const currentCards = store.getCardsBySetId(setId);
+    // update badge
+    const badge = container.querySelector('#card-count');
+    if(badge) badge.textContent = currentCards.length;
+    // update header badge
+    const hBadge = hl.querySelector('.badge');
+    if(hBadge) hBadge.textContent = `${currentCards.length} ${currentCards.length===1?'tarjeta':'tarjetas'}`;
+    // update title
+    const titleEl = hl.querySelector('.detail-title');
+    if(currentSet && titleEl) titleEl.textContent = currentSet.title;
+
+    stackEl.innerHTML = '';
+    if(currentCards.length===0) {
+      stackEl.innerHTML = `<div class="empty"><div class="empty-icon">🃏</div><h3 class="empty-title">Sin tarjetas todavía</h3><p class="empty-desc">Añade tu primera tarjeta a este conjunto.</p></div>`;
+    } else {
+      currentCards.forEach((c,i) => stackEl.appendChild(renderCardItem(c,i)));
+    }
+  }
+
+  section.appendChild(secHeader);
+  section.appendChild(stackEl);
+
+  container.appendChild(nav);
+  container.appendChild(header);
+  container.appendChild(section);
+  wrapper.appendChild(container);
+
+  // Subscribe to store for live updates
+  const unsub = store.subscribe(renderCards);
+  wrapper._cleanup = unsub;
+  renderCards();
+  return wrapper;
+}
+
+function renderHomePage() {
+  const wrapper = document.createElement('main');
+  wrapper.className = 'page';
+  const container = document.createElement('div');
+  container.className = 'container';
+
+  // Hero
+  const hero = document.createElement('header');
+  hero.innerHTML = `<h1 class="hero-title"><span>📖</span> StudyDeck</h1><p class="hero-sub">Tu plataforma personal de estudio con tarjetas.</p>`;
+
+  // Section
+  const section = document.createElement('section');
+
+  const secHeader = document.createElement('div');
+  secHeader.className = 'sec-header';
+  const secInfo = document.createElement('div');
+  secInfo.innerHTML = `<h2 class="sec-title">Mis conjuntos</h2><p class="sec-sub" id="set-count-msg"></p>`;
+  const newBtn = document.createElement('button');
+  newBtn.className = 'btn btn-primary btn-md';
+  newBtn.innerHTML = `${icons.plus} Nuevo conjunto`;
+  newBtn.addEventListener('click', () => openSetForm());
+  secHeader.appendChild(secInfo);
+  secHeader.appendChild(newBtn);
+
+  const grid = document.createElement('div');
+  grid.id = 'set-grid';
+
+  function renderSets() {
+    const sets = [...store.sets].sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
+    const countMsg = container.querySelector('#set-count-msg');
+    if(countMsg) countMsg.textContent = sets.length===0 ? 'Crea tu primer conjunto para empezar a estudiar.' : `${sets.length} ${sets.length===1?'conjunto':'conjuntos'}`;
+
+    grid.innerHTML = '';
+    if(sets.length===0) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">📚</div><h3 class="empty-title">Sin conjuntos todavía</h3><p class="empty-desc">Los conjuntos agrupan tarjetas por tema. Crea uno y añade tus primeras tarjetas.</p></div>`;
+    } else {
+      grid.className = 'set-grid';
+      sets.forEach(set => {
+        const cardCount = store.getCardsBySetId(set.id).length;
+        const card = document.createElement('article');
+        card.className = 'set-card';
+        card.innerHTML = `
+          <div class="set-card-accent"></div>
+          <button class="set-card-main" aria-label="Abrir ${escHtml(set.title)}">
+            <div class="set-card-title">${escHtml(set.title)}</div>
+            ${set.description ? `<div class="set-card-desc">${escHtml(set.description)}</div>` : ''}
+            <div class="set-card-meta">
+              <span class="badge">${cardCount} ${cardCount===1?'tarjeta':'tarjetas'}</span>
+              <span class="meta-date">Act. ${fmtDate(set.updatedAt)}</span>
+            </div>
+          </button>
+          <div class="set-card-actions">
+            <button class="icon-btn" title="Editar" data-edit>${icons.edit}</button>
+            <button class="icon-btn del" title="Eliminar" data-del>${icons.trash}</button>
+          </div>`;
+        card.querySelector('.set-card-main').addEventListener('click', () => router.go('set', set.id));
+        card.querySelector('[data-edit]').addEventListener('click', e => { e.stopPropagation(); openSetForm(set); });
+        card.querySelector('[data-del]').addEventListener('click', e => { e.stopPropagation();
+          openConfirm({ title:'Eliminar conjunto', message:`¿Seguro que quieres eliminar "${set.title}"? Se borrarán también sus ${cardCount} ${cardCount===1?'tarjeta':'tarjetas'}. Esta acción no se puede deshacer.`,
+            confirmLabel:'Sí, eliminar', onConfirm() { store.deleteSet(set.id); toast('Conjunto eliminado'); } });
+        });
+        grid.appendChild(card);
+      });
+    }
+  }
+
+  section.appendChild(secHeader);
+  section.appendChild(grid);
+  container.appendChild(hero);
+  container.appendChild(section);
+  wrapper.appendChild(container);
+
+  const unsub = store.subscribe(renderSets);
+  wrapper._cleanup = unsub;
+  renderSets();
+  return wrapper;
+}
+
+// ── ROUTER MOUNT ─────────────────────────────────────
+function mount() {
+  const app = document.getElementById('app');
+  let currentEl = null;
+
+  function render() {
+    if(currentEl?._cleanup) currentEl._cleanup();
+    app.innerHTML = '';
+    const { page, setId } = router.current;
+    currentEl = page==='set' ? renderSetDetailPage(setId) : renderHomePage();
+    app.appendChild(currentEl);
+  }
+
+  router.onChange(render);
+  render();
+}
+
+mount();
+</script>
+</body>
+</html>
